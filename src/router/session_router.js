@@ -1,6 +1,6 @@
 import { Router } from "express";
 import passport from "passport";
-import { MongoDB_Disconnect } from "../DB/config.js";
+import { MongoDB_Disconnect } from "../DB/connection.js";
 import { checkAuthentication } from "../config/passport_config.js";
 import { upload } from "../config/multer_config.js"
 import { logger } from "../config/winston_config.js"

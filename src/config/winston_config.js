@@ -10,7 +10,7 @@ export const logger = winston.createLogger({
     new winston.transports.Console(),
     new winston.transports.File({
       filename: 'warn.log',
-      dirname: './logs',
+      dirname: '../logs',
       level: 'warn'
     }),
     new winston.transports.File({

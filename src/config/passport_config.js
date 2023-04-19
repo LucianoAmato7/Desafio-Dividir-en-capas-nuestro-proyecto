@@ -2,8 +2,8 @@ import passport from "passport";
 import bcrypt from "bcrypt";
 import { Strategy as LocalStrategy } from "passport-local";
 import { logger } from "./winston_config.js"
-import { MongoDB_Connect } from "../DB/config.js"
-import { user_Model } from "../src/models/user_model.js"
+import { MongoDB_Connect } from "../DB/connection.js"
+import { user_Model } from "../models/user_model.js"
 
 
 

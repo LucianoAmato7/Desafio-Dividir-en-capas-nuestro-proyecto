@@ -1,6 +1,5 @@
 import express from "express";
-import ApiProdsMongoDB from "./api/productos.js";
-import ApiMsjMongoDB from "./api/mensajes.js";
+import msjDaoMongoDB from "./daos/indexDAO.js";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import cookieParser from "cookie-parser";
@@ -14,6 +13,8 @@ import { logger } from "./config/winston_config.js";
 import { PassportLogic, checkAuthentication } from "./config/passport_config.js"
 import RouterSession from "./router/session_router.js";
 import RouterTest from "./router/test_router.js"
+import RouterProductos from "./router/products_router.js"
+import RouterMensajes from "./router/mensajes_router.js"
 import { engine } from "express-handlebars";
 import { dirname } from 'path';
 import { fileURLToPath} from 'url';
@@ -27,9 +28,6 @@ const args = minimist(process.argv.slice(2), []);
 const app = express();
 const server = createServer(app);
 const io = new Server(server);
-
-const apiProdsMongoDB = new ApiProdsMongoDB();
-const apiMsjMongoDB = new ApiMsjMongoDB();
 
 app.use(cookieParser());
 
@@ -68,8 +66,11 @@ app.use(passport.session());
 app.use(passport.initialize());
 PassportLogic()
 
-app.use("/api/test", RouterTest); //ok
-app.use("/session", RouterSession); //ok
+app.use("/api/test", RouterTest);
+app.use("/session", RouterSession);
+app.use("/api/productos", RouterProductos);
+app.use("/api/mensajes", RouterMensajes);
+
 
 //INICIO
 app.get("/", checkAuthentication, (req, res) => {
@@ -90,49 +91,30 @@ app.get("/", checkAuthentication, (req, res) => {
 
   res.render("inicio", { toRender });
 
-  io.on("connection", (socket) => {
-    console.log("Nuevo cliente conectado");
+  // io.on("connection", (socket) => {
+  //   console.log("Nuevo cliente conectado");
 
-    //MSJS
+  //   //MSJS
 
-    apiMsjMongoDB.ListarMsjs().then((msjs) => {
-      socket.emit("mensajes", msjs);
-    });
+  //   msjDaoMongoDB.ListarMsjs().then((msjs) => {
+  //     socket.emit("mensajes", msjs);
+  //   });
 
-    setTimeout(() => {
-      socket.on("nuevo-mensaje", (data) => {
-        apiMsjMongoDB
-          .guardarMsj(data)
-          .then(() => {
-            console.log("Mensaje cargado en la base de datos");
-            return apiMsjMongoDB.ListarMsjs();
-          })
-          .then((msj) => {
-            io.sockets.emit("mensajes", msj);
-            console.log("Vista de mensajes actualizada");
-          });
-      });
-    }, 2000);
-
-    //PRODS
-
-    apiProdsMongoDB.GetProds().then((prods) => {
-      socket.emit("productos", prods);
-    });
-
-    socket.on("nuevo-producto", (data) => {
-      apiProdsMongoDB
-        .CreateProd(data)
-        .then(() => {
-          console.log("Producto cargado en la base de datos");
-          return apiProdsMongoDB.GetProds();
-        })
-        .then((prods) => {
-          io.sockets.emit("productos", prods);
-          console.log("Vista de productos actualizada");
-        });
-    });
-  });
+  //   setTimeout(() => {
+  //     socket.on("nuevo-mensaje", (data) => {
+  //       msjDaoMongoDB
+  //         .guardarMsj(data)
+  //         .then(() => {
+  //           console.log("Mensaje cargado en la base de datos");
+  //           return msjDaoMongoDB.ListarMsjs();
+  //         })
+  //         .then((msj) => {
+  //           io.sockets.emit("mensajes", msj);
+  //           console.log("Vista de mensajes actualizada");
+  //         });
+  //     });
+  //   }, 2000);
+  // });
 });
 
 

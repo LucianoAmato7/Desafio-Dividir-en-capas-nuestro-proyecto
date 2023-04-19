@@ -48,8 +48,3 @@
 -`node server.js 8085`
 
 -Luego ejecutamos Nginx y nos dirigimos a 'localhost/api/randoms', la misma nos redirige de manera equivalente a los 4 puertos previamente configurados en el upstream.
-
-
-## TO DO 
--importar variable de entorno en donde se necesite de dotenv_config.js
--importar en donde se necesite modelos de mongoose

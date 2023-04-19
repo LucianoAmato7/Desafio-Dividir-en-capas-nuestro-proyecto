@@ -1,25 +1,24 @@
 import mongoose from "mongoose";
+import { logger } from "../config/winston_config";
 
 export async function MongoDB_Connect (){
   try {
     await mongoose.connect(urlMongoDB, {
       serverSelectionTimeoutMS: 10000,
     });
+    logger.info('Base de datos MongoDB conectada con exito');
   } catch (err) {
-    console.log(
+    logger.error(
       `Error al conectar la base de datos: ${err}`
     );
-  }finally{
-    console.log('Base de datos MongoDB conectada con exito');
   }
 }
 
 export async function MongoDB_Disconnect (){
   try{
     await mongoose.disconnect();
+    logger.info('Base de datos MongoDB desconectada con exito');
   } catch(err) {
-    console.log(`error al desconectar la base de datos: ${err}`)
-  }finally{
-    console.log('Base de datos MongoDB desconectada con exito');
+    logger.error(`error al desconectar la base de datos: ${err}`)
   }
 }

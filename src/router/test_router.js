@@ -1,7 +1,7 @@
 import { fork } from "child_process";
 import { logger } from "../config/winston_config.js"
 import { Router } from "express";
-import ApiProdsMongoDB from "../api/productos.js"
+import {productsDaoMongoDB} from "../daos/indexDAO.js"
 import compression from "compression";
 import minimist from "minimist";
 import os from "os";
@@ -12,8 +12,6 @@ const numCPUs = os.cpus().length;
 
 const gzipMiddleware = compression();
 
-const apiProdsMongoDB = new ApiProdsMongoDB()
-
 const router = Router();
 
 //MOCK - FAKE PRODS
@@ -22,7 +20,7 @@ router.get("/productos-test", (req, res) => {
       `Se ha recibido una petición ${req.method} en la ruta ${req.originalUrl}`
     );
   
-    const productosFake = apiProdsMongoDB.FakeProds();
+    const productosFake = productsDaoMongoDB.FakeProds();
     res.render("productos-test", { productosFake });
 });
 
@@ -44,23 +42,6 @@ router.get("/info", gzipMiddleware, (req, res) => {
     };
 
     res.render("info", { info });
-});
-
-//CHILD PROCESS
-router.get("/randoms", (req, res) => {
-    logger.info(
-        `Se ha recibido una petición ${req.method} en la ruta ${req.originalUrl}`
-    );
-
-    const cant = Number(req.query.cant) || 10e7;
-
-    // const child = fork("../api/randoms.js");
-
-    // child.send(cant);
-
-    // child.on("message", (result) => {
-    //   res.json(result);
-    // });
 });
 
 export default router
