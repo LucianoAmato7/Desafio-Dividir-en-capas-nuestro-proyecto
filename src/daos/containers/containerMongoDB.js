@@ -1,5 +1,8 @@
 import { faker } from "@faker-js/faker";
 faker.locale = "es";
+import { urlMongoDB } from "../../config/dotenv_config.js"
+import { logger } from "../../config/winston_config.js"
+import mongoose from "mongoose"
 
 class ContainerMongoDB {
   constructor(model) {
@@ -16,7 +19,6 @@ class ContainerMongoDB {
     }
   }
 
-  // MSJ
   async guardarMsj(data) {
     console.log(`guardarMsj se ejecuta y va a guardar la siguiente data: ${data}`); //TESTEO
     // try {
@@ -28,6 +30,7 @@ class ContainerMongoDB {
     // }
   }
 
+  //PRODS
   //Lista todos los productos.
   async GetProds() {
     try {
@@ -59,6 +62,7 @@ class ContainerMongoDB {
     }
   }
 
+  //TEST
   FakeProds() {
     const RandomProd = () => {
       return {
@@ -74,6 +78,50 @@ class ContainerMongoDB {
       products.push(RandomProd());
     }
     return products;
+  }
+
+  //CONEXION A DB
+  async MongoDB_Connect () {
+    try {
+      await mongoose.connect(urlMongoDB, {
+        serverSelectionTimeoutMS: 10000,
+      });
+      logger.info('Base de datos MongoDB conectada con exito');
+    } catch (err) {
+      logger.error(
+        `Error al conectar la base de datos: ${err}`
+      );
+    }
+  }
+
+  async MongoDB_Disconnect () {
+    try{
+      await mongoose.disconnect();
+      logger.info('Base de datos MongoDB desconectada con exito');
+    } catch(err) {
+      logger.error(`error al desconectar la base de datos: ${err}`)
+    }
+  }
+
+  //USER
+  async FindUser (email) {
+    try{
+      const user = await this.model.findOne({ email: email })
+      logger.info(`Usuario encontrado`)
+      return user
+    }catch(error){
+      logger.error( error )
+    }
+  }
+
+  async SaveUser(newUser){
+    try{
+      const userToSave = new this.model(newUser)
+      userToSave.save()
+      logger.info(`Usuario: ${newUser.username} registrado con exito!`);
+    }catch(error){
+      logger.error(error)
+    }
   }
 }
 

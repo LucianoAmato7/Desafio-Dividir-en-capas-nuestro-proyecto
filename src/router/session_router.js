@@ -1,76 +1,28 @@
 import { Router } from "express";
-import passport from "passport";
-import { MongoDB_Disconnect } from "../DB/connection.js";
-import { checkAuthentication } from "../config/passport_config.js";
-import { upload } from "../config/multer_config.js"
-import { logger } from "../config/winston_config.js"
+import {
+  Login_Authenticate_controller,
+  Login_Fail_controller,
+  Login_Render_controller,
+  Logout_controller,
+  Register_Authenticate_controller,
+  Register_Fail_controller,
+  Register_Render_controller,
+} from "../controllers/session_controller.js";
+
 const router = Router();
 
-//LOGIN
-router.get("/login", (req, res) => {
-  res.render("login");
-});
+router.get("/login", Login_Render_controller);
 
-router.post(
-  "/login",
-  passport.authenticate("login", {
-    failureRedirect: "/session/faillogin",
-  }),
-  (req, res) => {
-    const user = req.user;
-    req.session.user = user;
-    res.redirect("/");
-  }
-);
+router.post("/login", Login_Authenticate_controller);
 
-//REGISTER
-router.get("/register", (req, res) => {
-  res.render("register");
-});
+router.get("/register", Register_Render_controller);
 
-router.post(
-  "/register",
-  upload.single("image"),
-  passport.authenticate("register", {
-    failureRedirect: "/session/failregister",
-  }),
-  (req, res) => {
-    req.session.destroy((error) => {
-      if (error) {
-        logger.error(`Error al destruir la session ${error}`);
-        return;
-      } 
-    })
-    res.redirect("/session/login");
-  }
-);
+router.post("/register", Register_Authenticate_controller);
 
-//FALLA AL LOGEAR
-router.get("/faillogin", (req, res) => {
-  res.render("failLogin");
-});
+router.get("/faillogin", Login_Fail_controller);
 
-//FALLA AL REGISTRAR
-router.get("/failregister", (req, res) => {
-  res.render("failRegister");
-});
+router.get("/failregister", Register_Fail_controller);
 
-//DESLOGUEO
-router.post("/logout", checkAuthentication, (req, res) => {
-  const user = req.session.user;
-
-  req.session.destroy((error) => {
-    if (error) {
-      logger.error(`Error al destruir la session ${error}`);
-      return;
-    } else {
-      res.render("logout", { user });
-    }
-  });
-  
-  //SE DESCONECTA LA BASE DE DATOS
-  MongoDB_Disconnect();
-  
-});
+router.post("/logout", Logout_controller);
 
 export default router;

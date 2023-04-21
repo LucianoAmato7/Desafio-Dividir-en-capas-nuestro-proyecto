@@ -1,5 +1,4 @@
 import express from "express";
-import msjDaoMongoDB from "./daos/indexDAO.js";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import cookieParser from "cookie-parser";
@@ -19,6 +18,7 @@ import { engine } from "express-handlebars";
 import { dirname } from 'path';
 import { fileURLToPath} from 'url';
 import { urlMongoDB } from "./config/dotenv_config.js"
+import mongoose from "mongoose";
 
 const __filename = fileURLToPath(import.meta.url);
 export const __dirname = dirname(__filename);
@@ -38,8 +38,8 @@ app.engine(
     extname: "*.hbs",
     defaultLayout: "index.hbs",
   })
-  );
-  app.set('views', __dirname + '/views')
+);
+app.set('views', __dirname + '/views')
 app.set("view engine", "hbs");
 
 app.use(express.static(__dirname + "/public"));
@@ -87,34 +87,34 @@ app.get("/", checkAuthentication, (req, res) => {
   
   let url = {protocol: req.protocol, host: req.hostname, port: server.address().port, hostBoolean}
 
-  let toRender = {...user, ...url};
+  let toRender = {...user, ...url}
 
   res.render("inicio", { toRender });
 
-  // io.on("connection", (socket) => {
-  //   console.log("Nuevo cliente conectado");
+  io.on("connection", (socket) => {
+    console.log("Nuevo cliente conectado");
 
-  //   //MSJS
+    //MSJS
 
-  //   msjDaoMongoDB.ListarMsjs().then((msjs) => {
-  //     socket.emit("mensajes", msjs);
-  //   });
+    // msjDaoMongoDB.ListarMsjs().then((msjs) => {
+    //   socket.emit("mensajes", msjs);
+    // });
 
-  //   setTimeout(() => {
-  //     socket.on("nuevo-mensaje", (data) => {
-  //       msjDaoMongoDB
-  //         .guardarMsj(data)
-  //         .then(() => {
-  //           console.log("Mensaje cargado en la base de datos");
-  //           return msjDaoMongoDB.ListarMsjs();
-  //         })
-  //         .then((msj) => {
-  //           io.sockets.emit("mensajes", msj);
-  //           console.log("Vista de mensajes actualizada");
-  //         });
-  //     });
-  //   }, 2000);
-  // });
+    // setTimeout(() => {
+    //   socket.on("nuevo-mensaje", (data) => {
+    //     msjDaoMongoDB
+    //       .guardarMsj(data)
+    //       .then(() => {
+    //         console.log("Mensaje cargado en la base de datos");
+    //         return msjDaoMongoDB.ListarMsjs();
+    //       })
+    //       .then((msj) => {
+    //         io.sockets.emit("mensajes", msj);
+    //         console.log("Vista de mensajes actualizada");
+    //       });
+    //   });
+    // }, 2000);
+  });
 });
 
 

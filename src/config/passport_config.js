@@ -1,11 +1,11 @@
 import passport from "passport";
 import bcrypt from "bcrypt";
 import { Strategy as LocalStrategy } from "passport-local";
-import { logger } from "./winston_config.js"
-import { MongoDB_Connect } from "../DB/connection.js"
-import { user_Model } from "../models/user_model.js"
-
-
+import { logger } from "./winston_config.js";
+import {
+  FindUser_controller,
+  SaveUser_controller,
+} from "../controllers/session_controller.js";
 
 export function PassportLogic() {
   passport.use(
@@ -14,14 +14,17 @@ export function PassportLogic() {
       {
         usernameField: "email",
         passwordField: "password",
+        passReqToCallback: true,
       },
       async (email, password, done) => {
-        const isValidPassword = (user, password) => {
+        console.log(`${email}, ${password}`);
+        function isValidPassword(user, password) {
           return bcrypt.compareSync(password, user.password);
-        };
+        }
         try {
-          await MongoDB_Connect();
-          const user = await user_Model.findOne({ email: email });
+          console.log('passport ejecutado');
+          const user = await FindUser_controller(email);
+
           if (!user) {
             return done(null, false, {
               message:
@@ -53,17 +56,17 @@ export function PassportLogic() {
       async function (req, email, password, done) {
         const { name, address, age, phone_number } = req.body;
         try {
-          await MongoDB_Connect();
-          const user = await user_Model.findOne({ email: email });
+          const user = await FindUser_controller();
+
           if (user) {
             return done(null, false, {
               message: "El correo electrónico ya está registrado",
             });
-          } 
+          }
           const salt = await bcrypt.genSalt(10);
           const hashedPassword = await bcrypt.hash(password, salt);
-          
-          const newUser = new user_Model({
+
+          const newUser = {
             username: name,
             email,
             password: hashedPassword,
@@ -73,15 +76,12 @@ export function PassportLogic() {
             image: req.file
               ? `/images/${req.file.filename}`
               : `/images/default.png`,
-            cartID: ""
-          });
+            cartID: "",
+          };
 
-          await newUser.save();
-          
-          logger.info(`Usuario: ${name} registrado con exito!`);
+          await SaveUser_controller(newUser);
 
           return done(null, newUser);
-
         } catch (err) {
           logger.error(`Error en la estrategia de registro: ${err}`);
           return done(err);
